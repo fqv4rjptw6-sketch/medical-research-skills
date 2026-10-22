@@ -1,0 +1,32 @@
+name: Materialize pinned research Skills
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  materialize:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Install pinned Skill sources
+        run: bash setup-cloud.sh
+      - name: Verify expected Skill directories
+        run: |
+          test "$(find .agents/skills -mindepth 2 -maxdepth 2 -name SKILL.md | wc -l)" -eq 14
+          test -s .agents/skills/nature-academic-search/SKILL.md
+          test -s .agents/skills/literature-review/SKILL.md
+          test -s .agents/skills/academic-research-suite/SKILL.md
+          test -s .agents/skills/nature-shared/SKILL.md
+      - name: Commit Skills and retire one-time workflow
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add .agents/skills licenses
+          git rm -- .github/workflows/materialize-skills.yml
+          git commit -m 'Install 13 research Skills and shared dependency'
+          git push origin HEAD:main
